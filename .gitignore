@@ -1,0 +1,14 @@
+# Runtime outputs; GitHub Actions stores research reports as artifacts
+artifacts/
+*.mp4
+*.mp3
+*.wav
+*.png
+*.jpg
+*.webm
+__pycache__/
+*.py[cod]
+.venv/
+.env
+client_secret*.json
+token*.json
