@@ -6,7 +6,7 @@ WhySpark is a phone-manageable, GitHub Actions-based science and technology vide
 
 ## Current status
 
-This repository is being built in stages. The safety gate and CI tests are the first stage; do not treat this repository as a finished or connected YouTube publisher until the production workflow, rendering, source verification, OAuth secrets, and an end-to-end upload have all been tested.
+Implemented in this repository: an official-source RSS research collector, a daily GitHub Actions research workflow, and fail-closed publishing validation with regression tests. The research workflow writes a JSON/Markdown candidate report artifact. It does **not** yet generate a finished video or upload anything to YouTube. Do not treat this repository as a finished or connected YouTube publisher until script generation, semantic verification, original visuals, narration, rendering, OAuth secrets, and an end-to-end upload have all been implemented and tested.
 
 ## Safety contract
 
@@ -23,7 +23,7 @@ Automated checks cannot prove semantic truth or guarantee that YouTube will not 
 
 ## Zero-cost design
 
-- Research: official/public source feeds and pages; sources are recorded in a provenance report.
+- Research: official NASA and NOAA RSS feeds; candidate headlines and links are recorded in a provenance report. Keyword overlap is discovery only, never proof of factual corroboration.
 - Script: generated from the collected evidence, not from a paid LLM.
 - Visuals: original vector/diagram assets rendered locally.
 - Narration: open-source local text-to-speech on the GitHub runner.
@@ -32,6 +32,10 @@ Automated checks cannot prove semantic truth or guarantee that YouTube will not 
 - Publishing: YouTube Data API only after all gates pass.
 
 No paid provider is configured by default. Do not add billing or paid API keys.
+
+## Daily research automation
+
+The workflow `.github/workflows/daily-research.yml` runs at 14:30 UTC each day and can also be started from **Actions → WhySpark Daily Research → Run workflow**. It saves a JSON and Markdown research report as a GitHub Actions artifact for seven days. The workflow uses no AI API and has no YouTube publishing credentials. GitHub Actions status must be checked in the Actions tab; a committed workflow is not proof that a run succeeded.
 
 ## GitHub setup (phone browser only)
 
