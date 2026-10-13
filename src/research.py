@@ -94,7 +94,7 @@ def parse_feed(xml_text: str, source_name: str, allowed_hosts: list[str]) -> lis
             "url": link,
             "host": host,
             "published_at": normalize_date(published),
-            "summary": summary[:2500],
+            "summary": summary[:500],
             "evidence_status": "unverified_discovery_candidate",
         })
     return items
@@ -207,7 +207,7 @@ def run_research() -> dict:
         date = item.get("published_at") or "date not parsed"
         lines.append(f"- [{item['title']}]({item['url']}) — {item['source_name']} — {date}")
         if item.get("summary"):
-            lines.append(f"  - {item['summary'][:300]}")
+            lines.append(f"  - {item['summary'][:180]}")
     lines.extend(["", "## Related candidates (not verified)", ""])
     for pair in report["related_candidates"]:
         terms = ", ".join(pair["shared_discovery_terms"])
