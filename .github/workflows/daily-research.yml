@@ -68,7 +68,7 @@ jobs:
         run: python -m src.youtube_upload
 
       - name: Persist duplicate-upload history
-        if: success() && vars.PUBLISH_ENABLED == 'true'
+        if: always() && vars.PUBLISH_ENABLED == 'true' && hashFiles('artifacts/upload-history.json') != ''
         run: |
           cp artifacts/upload-history.json state/upload-history.json
           git config user.name "github-actions[bot]"
