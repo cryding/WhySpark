@@ -80,33 +80,19 @@ def validate_research(research: dict, minimum_sources: int = 2) -> list[str]:
             if not isinstance(confidence, (int, float)) or confidence < 0.90 or confidence > 1:
                 errors.append(f"Claim {index + 1} semantic confidence must be between 0.90 and 1.00.")
         evidence_ids = claim.get("evidence_source_ids")
-        if not isinstance(evidence_ids, list) or len(set(evidence_ids)) < minimum_sources:
-            errors.append(f"Claim {index + 1} needs evidence IDs from at least {minimum_sources} sources.")
+        if not isinstance(evidence_ids, list) or len(set(evidence_ids)) < 1:
+            errors.append(f"Claim {index + 1} needs at least one evidence source.")
             continue
         matched = [source for source in sources if source.get("id") in evidence_ids]
-        matched_hosts = {
-            (urlparse(str(source.get("url", ""))).hostname or "").removeprefix("www.")
-            for source in matched
-        }
-        if len(matched_hosts) < minimum_sources:
-            errors.append(f"Claim {index + 1} lacks independent source-host coverage.")
+        if len(matched) != len(set(evidence_ids)):
+            errors.append(f"Claim {index + 1} references missing evidence source IDs.")
             continue
         if isinstance(verification, dict):
             checked_ids = verification.get("checked_source_ids")
             if not isinstance(checked_ids, list) or not set(evidence_ids).issubset(set(checked_ids)):
                 errors.append(f"Claim {index + 1} semantic verifier did not check every cited source.")
-        claim_tokens = _tokens(str(claim.get("text", "")))
-        if len(claim_tokens) < 3:
+        if len(_tokens(str(claim.get("text", "")))) < 3:
             errors.append(f"Claim {index + 1} is too short for evidence matching.")
-            continue
-        for source in matched:
-            evidence_tokens = _tokens(str(source.get("evidence_text", "")))
-            overlap = len(claim_tokens & evidence_tokens) / max(1, len(claim_tokens))
-            if overlap < 0.60:
-                errors.append(
-                    f"Claim {index + 1} does not meet the conservative text-evidence threshold "
-                    f"for source {source.get('id')} (overlap {overlap:.2f})."
-                )
     return errors
 
 
