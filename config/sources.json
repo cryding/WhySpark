@@ -3,7 +3,7 @@
     {
       "name": "NASA News Releases",
       "url": "https://www.nasa.gov/news-release/feed/",
-      "allowed_hosts": ["nasa.gov", "www.nasa.gov"],
+      "allowed_hosts": ["nasa.gov", "www.nasa.gov", "science.nasa.gov"],
       "purpose": "Official NASA announcements and science reporting"
     },
     {
