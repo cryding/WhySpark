@@ -103,8 +103,6 @@ def main():
     report = json.loads(RESEARCH_PATH.read_text(encoding="utf-8"))
     items_by_url = {item.get("url"): item for item in report.get("items", [])}
     pairs = report.get("related_candidates", [])
-    if not pairs:
-        raise RuntimeError("No related official-source candidates found; no episode will be invented.")
     pair = None
     selected = []
     for candidate in pairs:
@@ -125,8 +123,23 @@ def main():
         pair = candidate
         selected = [left, right]
         break
+
+    # If no topical pair exists, use one recent item from each approved publisher.
+    # The script explicitly presents them as separate updates and never claims they corroborate.
     if not pair:
-        raise RuntimeError("No candidate pair meets approved-host, date, and evidence-text requirements.")
+        for item in sorted(report.get("items", []), key=lambda x: x.get("published_at", ""), reverse=True):
+            host = (urlparse(item.get("url", "")).hostname or "").lower()
+            if host not in APPROVED_HOSTS or not item.get("published_at") or len(item.get("summary", "")) < 50:
+                continue
+            if selected and (urlparse(selected[0].get("url", "")).hostname or "").lower().removeprefix("www.") == host.removeprefix("www."):
+                continue
+            if not selected or item.get("source_name") != selected[0].get("source_name"):
+                selected.append(item)
+            if len(selected) == 2:
+                break
+        if len(selected) != 2:
+            raise RuntimeError("Need dated evidence excerpts from two independent approved publishers.")
+        pair = {"shared_discovery_terms": []}
 
     writer, tokenizer, verifier = load_models()
     sources = []
@@ -170,8 +183,11 @@ def main():
         "narration": "Read both source links in the description. Keep asking questions, and follow the evidence."
     })
     topic_words = pair.get("shared_discovery_terms", [])[:3]
-    topic = " ".join(word.capitalize() for word in topic_words) or "Science Update"
-    title = f"What Science Sources Report About {topic}"[:95]
+    topic = " ".join(word.capitalize() for word in topic_words) or "Science Updates"
+    if topic_words:
+        title = f"What Science Sources Report About {topic}"[:95]
+    else:
+        title = "Two Official Science Updates Worth Exploring"
     description = (
         "WhySpark — Big Questions. Simple Answers.\n\n"
         "This short summarizes claims checked against official source excerpts using a local natural-language-entailment model. "
