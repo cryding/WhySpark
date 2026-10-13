@@ -1,8 +1,8 @@
 """Fail-closed validation gates for WhySpark.
 
 Lexical matching does not prove semantic truth. A claim must carry explicit
-evidence and pass a conservative evidence check; uncertain or absent data
-blocks publishing.
+source evidence and a separate semantic-verification result. Uncertain or
+absent data blocks publishing.
 """
 from __future__ import annotations
 
@@ -13,10 +13,7 @@ from urllib.parse import urlparse
 
 APPROVED_HOSTS = {"nasa.gov", "www.nasa.gov", "noaa.gov", "www.noaa.gov"}
 REQUIRED_RIGHTS_FIELDS = ("origin", "rights_status", "creator", "license")
-
-
-class GateError(ValueError):
-    """Raised when a required publishing gate fails."""
+ALLOWED_SEMANTIC_VERIFIERS = {"independent_entailment_model", "human_review"}
 
 
 def _tokens(text: str) -> set[str]:
@@ -71,6 +68,17 @@ def validate_research(research: dict, minimum_sources: int = 2) -> list[str]:
         if not isinstance(claim, dict) or not str(claim.get("text", "")).strip():
             errors.append(f"Claim {index + 1} is missing text.")
             continue
+        verification = claim.get("semantic_verification")
+        if not isinstance(verification, dict):
+            errors.append(f"Claim {index + 1} has no semantic verification record.")
+        else:
+            if verification.get("status") != "pass":
+                errors.append(f"Claim {index + 1} semantic verification did not pass.")
+            if verification.get("method") not in ALLOWED_SEMANTIC_VERIFIERS:
+                errors.append(f"Claim {index + 1} uses an unapproved semantic verification method.")
+            confidence = verification.get("confidence")
+            if not isinstance(confidence, (int, float)) or confidence < 0.90 or confidence > 1:
+                errors.append(f"Claim {index + 1} semantic confidence must be between 0.90 and 1.00.")
         evidence_ids = claim.get("evidence_source_ids")
         if not isinstance(evidence_ids, list) or len(set(evidence_ids)) < minimum_sources:
             errors.append(f"Claim {index + 1} needs evidence IDs from at least {minimum_sources} sources.")
@@ -83,6 +91,10 @@ def validate_research(research: dict, minimum_sources: int = 2) -> list[str]:
         if len(matched_hosts) < minimum_sources:
             errors.append(f"Claim {index + 1} lacks independent source-host coverage.")
             continue
+        if isinstance(verification, dict):
+            checked_ids = verification.get("checked_source_ids")
+            if not isinstance(checked_ids, list) or not set(evidence_ids).issubset(set(checked_ids)):
+                errors.append(f"Claim {index + 1} semantic verifier did not check every cited source.")
         claim_tokens = _tokens(str(claim.get("text", "")))
         if len(claim_tokens) < 3:
             errors.append(f"Claim {index + 1} is too short for evidence matching.")
@@ -155,6 +167,14 @@ def validate_render(render: dict) -> list[str]:
         errors.append("Rendered Short duration must be 15–60 seconds.")
     if render.get("render_exit_code") != 0:
         errors.append("Renderer did not report a successful exit code.")
+    content_hash = str(render.get("content_sha256", ""))
+    if not re.fullmatch(r"[a-f0-9]{64}", content_hash):
+        errors.append("Rendered video is missing a valid SHA-256 content hash.")
+    uploaded_hashes = render.get("uploaded_hashes", [])
+    if not isinstance(uploaded_hashes, list):
+        errors.append("Uploaded-content history is malformed.")
+    elif content_hash in uploaded_hashes:
+        errors.append("This exact video hash was already uploaded; duplicate publishing is blocked.")
     return errors
 
 
