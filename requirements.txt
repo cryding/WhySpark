@@ -1,0 +1,3 @@
+# Free/open-source libraries only. No paid API SDKs.
+requests>=2.31,<3
+Pillow>=10,<13
