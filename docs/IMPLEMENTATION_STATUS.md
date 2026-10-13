@@ -2,32 +2,41 @@
 
 Last updated: 2026-10-13
 
-## Implemented in `main`
+## Code present on `main`
 
-- [x] Public repository `cryding/WhySpark` is the project home.
-- [x] Official-source RSS research collector: `src/research.py`.
-- [x] Source allowlist: NASA News Releases and NOAA National Ocean Service News in `config/sources.json`.
-- [x] Research report output: `artifacts/research.json` and `artifacts/research-report.md`.
-- [x] Daily GitHub Actions research workflow at 14:30 UTC: `.github/workflows/daily-research.yml`.
-- [x] Research artifacts retained for seven days.
-- [x] Fail-closed publishing validation for approved sources, independent-source coverage, claim evidence, semantic-verification records, original media rights, metadata, video streams/dimensions/duration, content hashes, and duplicate blocking: `src/publish_gate.py`.
-- [x] Regression tests for research parsing and safety gates.
-- [x] CI workflow configured for pushes, pull requests, and manual runs.
+- [x] Official-source RSS discovery from NASA and NOAA: `src/research.py`.
+- [x] Candidate reports and topic overlap discovery.
+- [x] Local script generation with `google/flan-t5-small`: `src/generate_episode.py`.
+- [x] Local NLI claim check with `cross-encoder/nli-deberta-v3-small`, threshold 0.90; any failed claim blocks production.
+- [x] Original Pillow-generated vector visuals, local `espeak-ng` narration, FFmpeg render and `ffprobe` checks: `src/render_short.py`.
+- [x] Fail-closed validation for approved source hosts, independent source diversity, claim evidence and NLI records, original media rights records, metadata, render properties, hashes, and duplicates: `src/publish_gate.py`.
+- [x] YouTube OAuth uploader: `src/youtube_upload.py`. It uploads privately, waits for YouTube processing to succeed, then requests public visibility and verifies it.
+- [x] Persistent duplicate hash history: `state/upload-history.json`.
+- [x] Daily workflow connects research → script and local NLI → render → gated upload: `.github/workflows/daily-research.yml`.
+- [x] CI workflow and unit tests are present.
+- [x] No paid AI API, credit purchase, or paid billing configured.
 
-## Not implemented / not verified yet
+## Not yet verified
 
-- [ ] Actual script generation from verified evidence.
-- [ ] Integrated semantic fact-checking model or verifier. A claim without a valid semantic-verification record is blocked.
-- [ ] Original visual generation and local text-to-speech.
-- [ ] FFmpeg rendering and independent ffprobe validation wired into the pipeline.
-- [ ] YouTube OAuth credential setup and token refresh.
-- [ ] Upload, post-upload processing verification, and idempotent publication history integrated end to end.
-- [ ] End-to-end video generated and uploaded.
-- [ ] Public publishing tested on the real WhySpark channel.
-- [ ] Successful GitHub Actions run confirmed by inspecting run logs.
+- [ ] Full GitHub Actions production workflow passes end to end.
+- [ ] The model downloads and inference finish within the GitHub runner time/resource limits.
+- [ ] Real source candidates meet the required independent-host and publication-date checks.
+- [ ] YouTube OAuth secrets have been configured and refresh successfully.
+- [ ] The first private upload processes successfully.
+- [ ] The channel/API project is permitted to make uploads public.
+- [ ] Public upload and duplicate-history persistence have passed a real run.
 
-## Safety state
+## Activation controls
 
-**Public publishing is not active.** The current daily workflow only collects research candidates and produces an artifact. It does not access YouTube credentials or upload videos. The validation module is a safety component, not an end-to-end publisher.
+Automatic upload runs only when the repository variable `PUBLISH_ENABLED` equals `true` and all three secrets are present:
+- `YOUTUBE_CLIENT_ID`
+- `YOUTUBE_CLIENT_SECRET`
+- `YOUTUBE_REFRESH_TOKEN`
 
-The repository is designed to fail closed. Keyword overlap is only a discovery signal and must never be treated as proof of factual corroboration. Do not add paid APIs, paid credits, or paid billing.
+Without the variable, the workflow should generate and retain artifacts without attempting upload. Do not set the variable until a manual production run has been reviewed.
+
+## Safety limits
+
+NLI is a probabilistic text entailment check, not a guarantee of factual truth. The pipeline cites the official sources in the description and stops on model/source failures, but no automated tool can guarantee that a source is correct or that a platform will never raise a copyright claim. Source media is not downloaded; the video uses project-generated vector art and local TTS.
+
+A code commit is not proof of a successful deployment, render, or upload. Do not report those as completed until the GitHub Actions run and YouTube status have been verified.
