@@ -6,7 +6,7 @@ WhySpark is a phone-manageable, GitHub Actions-based science and technology vide
 
 ## Current status
 
-Implemented in this repository: an official-source RSS research collector, a daily GitHub Actions research workflow, and fail-closed publishing validation with regression tests. The research workflow writes a JSON/Markdown candidate report artifact. It does **not** yet generate a finished video or upload anything to YouTube. Do not treat this repository as a finished or connected YouTube publisher until script generation, semantic verification, original visuals, narration, rendering, OAuth secrets, and an end-to-end upload have all been implemented and tested.
+Implemented in code: official-source RSS discovery, local model-based script drafting and natural-language-entailment checks, original vector visuals, local espeak-ng narration, FFmpeg rendering, fail-closed publication gates, and a YouTube OAuth uploader that uploads privately first and switches to public only after processing succeeds. A daily GitHub Actions workflow connects these stages. **The complete end-to-end workflow has not yet been verified by a successful Actions run or a real channel upload.** Model checks are fallible and do not guarantee truth or copyright clearance.
 
 ## Safety contract
 
@@ -35,20 +35,18 @@ No paid provider is configured by default. Do not add billing or paid API keys.
 
 ## Daily research automation
 
-The workflow `.github/workflows/daily-research.yml` runs at 14:30 UTC each day and can also be started from **Actions → WhySpark Daily Research → Run workflow**. It saves a JSON and Markdown research report as a GitHub Actions artifact for seven days. The workflow uses no AI API and has no YouTube publishing credentials. GitHub Actions status must be checked in the Actions tab; a committed workflow is not proof that a run succeeded.
+The workflow `.github/workflows/daily-research.yml` runs at 14:30 UTC (8:00 PM India time) and can also be started from **Actions → WhySpark Daily Production → Run workflow**. It downloads free CPU model weights, discovers official-source topics, drafts a script, checks each claim with a local entailment model, renders original visuals and local narration, and stores run artifacts for seven days. No paid API or billing is configured. A passing model score is not a guarantee of truth.
 
 ## GitHub setup (phone browser only)
 
 1. Open **Settings → Secrets and variables → Actions** in this repository.
-2. Add the required YouTube OAuth secrets only after the code and workflow are ready:
-   - `YOUTUBE_CLIENT_ID`
-   - `YOUTUBE_CLIENT_SECRET`
-   - `YOUTUBE_REFRESH_TOKEN`
-3. Never put tokens in source files, issues, logs, or commit messages.
-4. Open **Actions** to view tests and scheduled runs.
-5. Do not enable automatic public upload until the full pipeline and YouTube channel connection have been verified.
+2. Add these GitHub Actions secrets after setting up OAuth in Google Cloud: `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, and `YOUTUBE_REFRESH_TOKEN`.
+3. Under **Variables**, add `PUBLISH_ENABLED` with value `true` only when you are ready to permit automatic public release. Leave it unset/false to generate artifacts without uploading.
+4. Never put tokens in source files, issues, logs, or commit messages.
+5. Open **Actions → WhySpark Daily Production → Run workflow** and inspect the run and artifacts before enabling publishing.
+6. The uploader keeps the video private until the API reports successful processing; it then requests public visibility and verifies the status. If any check fails, it stops.
 
-YouTube OAuth credentials and API enablement are account-side setup requirements; GitHub cannot create these on your behalf. Some unverified YouTube API projects are restricted to private uploads until Google audits the API project.
+YouTube OAuth credentials and API enablement are account-side setup requirements; GitHub cannot create these on your behalf. Some YouTube API projects created after 28 July 2020 are restricted to private uploads until Google audits the API project. This pipeline will not claim public publishing succeeded if YouTube refuses the final visibility change.
 
 ## Local test command (optional)
 
