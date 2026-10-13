@@ -130,13 +130,24 @@ def main():
             raise RuntimeError("Uploaded video disappeared from YouTube API lookup.")
         item = items[0]
         processing = item.get("processingDetails", {}).get("processingStatus", "")
-        if processing == "succeeded":
+        upload_status = item.get("status", {}).get("uploadStatus", "")
+        rejection_reason = item.get("status", {}).get("rejectionReason")
+        if rejection_reason:
+            raise RuntimeError(f"YouTube rejected the uploaded video: {rejection_reason}; it remains private.")
+        if upload_status in {"failed", "rejected", "deleted"}:
+            raise RuntimeError(f"YouTube upload status is not publishable: {upload_status}; it remains private.")
+        if processing == "succeeded" and upload_status == "processed":
             break
         if processing in {"failed", "terminated"}:
             raise RuntimeError(f"YouTube processing failed: {processing}")
         time.sleep(15)
     if processing != "succeeded":
         raise RuntimeError("YouTube processing was not confirmed within 10 minutes; video remains private.")
+    final_info = youtube.videos().list(part="status", id=video_id).execute().get("items", [])
+    if not final_info or final_info[0].get("status", {}).get("uploadStatus") != "processed":
+        raise RuntimeError("YouTube did not confirm the upload as processed; video remains private.")
+    if final_info[0].get("status", {}).get("rejectionReason"):
+        raise RuntimeError("YouTube reported a rejection reason; video remains private.")
 
     # Public visibility is the final step: only after all gates and YouTube processing pass.
     youtube.videos().update(
