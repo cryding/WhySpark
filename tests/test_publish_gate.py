@@ -27,6 +27,21 @@ class GateTests(unittest.TestCase):
         }
         self.assertTrue(validate_research(research, 2))
 
+    def test_lexical_overlap_alone_is_not_fact_verification(self):
+        research = {
+            "sources": [
+                {"id": "a", "url": "https://www.nasa.gov/a", "title": "Planet report",
+                 "published_at": "2026-10-13", "evidence_text": "The planet report describes a new planet discovery."},
+                {"id": "b", "url": "https://www.noaa.gov/b", "title": "Planet report",
+                 "published_at": "2026-10-13", "evidence_text": "The planet report describes a new planet discovery."}
+            ],
+            "claims": [{
+                "text": "The planet report describes a new planet discovery",
+                "evidence_source_ids": ["a", "b"]
+            }]
+        }
+        self.assertTrue(any("semantic verification" in error for error in validate_research(research, 2)))
+
     def test_missing_rights_inventory_fails(self):
         self.assertTrue(validate_rights({}))
 
@@ -35,6 +50,23 @@ class GateTests(unittest.TestCase):
 
     def test_missing_render_fails(self):
         self.assertTrue(validate_render({}))
+
+    def test_duplicate_video_hash_is_blocked(self):
+        with open("duplicate-test.mp4", "wb") as handle:
+            handle.write(b"x" * 100001)
+        try:
+            from src.publish_gate import content_sha256
+            digest = content_sha256("duplicate-test.mp4")
+            render = {
+                "video_path": "duplicate-test.mp4", "has_video_stream": True,
+                "has_audio_stream": True, "width": 1080, "height": 1920,
+                "duration_seconds": 30, "render_exit_code": 0,
+                "content_sha256": digest, "uploaded_hashes": [digest]
+            }
+            self.assertTrue(any("already uploaded" in error for error in validate_render(render)))
+        finally:
+            import os
+            os.remove("duplicate-test.mp4")
 
     def test_gate_blocks_if_any_subsystem_fails(self):
         result = evaluate_publish_gate({}, {}, {}, {})
