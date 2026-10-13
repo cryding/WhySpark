@@ -40,7 +40,7 @@ The workflow `.github/workflows/daily-research.yml` runs at 14:30 UTC (8:00 PM I
 ## GitHub setup (phone browser only)
 
 1. Open **Settings → Secrets and variables → Actions** in this repository.
-2. Add these GitHub Actions secrets after setting up OAuth in Google Cloud: `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, and `YOUTUBE_REFRESH_TOKEN`.
+2. Add these GitHub Actions secrets after setting up OAuth in Google Cloud: `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, and `YOUTUBE_REFRESH_TOKEN`. The refresh token must authorize the `https://www.googleapis.com/auth/youtube.force-ssl` scope because the pipeline updates video visibility only after private processing succeeds.
 3. Under **Variables**, add `PUBLISH_ENABLED` with value `true` only when you are ready to permit automatic public release. Leave it unset/false to generate artifacts without uploading.
 4. Never put tokens in source files, issues, logs, or commit messages.
 5. Open **Actions → WhySpark Daily Production → Run workflow** and inspect the run and artifacts before enabling publishing.
