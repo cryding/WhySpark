@@ -1,3 +1,8 @@
 # Free/open-source libraries only. No paid API SDKs.
 requests>=2.31,<3
 Pillow>=10,<13
+transformers>=4.44,<5
+torch>=2.2,<3
+sentencepiece>=0.2,<1
+google-api-python-client>=2.140,<3
+google-auth>=2.34,<3
