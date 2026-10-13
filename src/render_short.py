@@ -152,7 +152,7 @@ def main():
     ])
     probe = subprocess.run([
         "ffprobe", "-v", "error", "-show_entries",
-        "stream=codec_type,width,height:format=duration,size", "-of", "json", str(VIDEO_PATH)
+        "stream=codec_type,codec_name,width,height:format=duration,size,format_name", "-of", "json", str(VIDEO_PATH)
     ], capture_output=True, text=True)
     if probe.returncode:
         raise RuntimeError("ffprobe could not inspect the final video.")
@@ -162,8 +162,11 @@ def main():
     audio = next((stream for stream in streams if stream.get("codec_type") == "audio"), None)
     duration = float(details.get("format", {}).get("duration", 0))
     size = int(details.get("format", {}).get("size", 0))
+    container = details.get("format", {}).get("format_name", "")
     if not video or not audio or video.get("width") != 1080 or video.get("height") != 1920:
         raise RuntimeError("Final render failed stream/dimension checks.")
+    if video.get("codec_name") != "h264" or audio.get("codec_name") != "aac" or "mp4" not in container:
+        raise RuntimeError("Final render failed MP4/H.264/AAC codec checks.")
     if not 15 <= duration <= 60 or size < 100_000:
         raise RuntimeError(f"Final render failed duration/size checks: duration={duration}, bytes={size}")
     from src.publish_gate import content_sha256
@@ -173,6 +176,9 @@ def main():
         "has_audio_stream": True,
         "width": int(video["width"]),
         "height": int(video["height"]),
+        "video_codec": video["codec_name"],
+        "audio_codec": audio["codec_name"],
+        "container": container,
         "duration_seconds": duration,
         "render_exit_code": 0,
         "content_sha256": content_sha256(VIDEO_PATH),
