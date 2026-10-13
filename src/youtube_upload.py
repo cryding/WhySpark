@@ -102,7 +102,7 @@ def main():
                 "defaultLanguage": metadata["language"],
             },
             "status": {
-                "privacyStatus": "public",
+                "privacyStatus": "private",
                 "selfDeclaredMadeForKids": False,
             },
         },
@@ -116,10 +116,9 @@ def main():
     video_id = response.get("id")
     if not video_id:
         raise RuntimeError("YouTube API returned no video ID.")
-    if response.get("status", {}).get("privacyStatus") != "public":
+    if response.get("status", {}).get("privacyStatus") != "private":
         raise RuntimeError(
-            "YouTube did not confirm public visibility. Upload may exist but will not be marked complete; "
-            "inspect the video in YouTube Studio."
+            "YouTube did not confirm the initial private upload. Do not attempt public release."
         )
 
     processing = None
@@ -137,7 +136,19 @@ def main():
             raise RuntimeError(f"YouTube processing failed: {processing}")
         time.sleep(15)
     if processing != "succeeded":
-        raise RuntimeError("YouTube processing was not confirmed within 10 minutes; upload is not marked complete.")
+        raise RuntimeError("YouTube processing was not confirmed within 10 minutes; video remains private.")
+
+    # Public visibility is the final step: only after all gates and YouTube processing pass.
+    youtube.videos().update(
+        part="status",
+        body={"id": video_id, "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}},
+    ).execute()
+    visibility_check = youtube.videos().list(part="status", id=video_id).execute()
+    verified_items = visibility_check.get("items", [])
+    if not verified_items or verified_items[0].get("status", {}).get("privacyStatus") != "public":
+        raise RuntimeError(
+            "Public visibility could not be confirmed. The video may remain private; inspect YouTube Studio."
+        )
 
     history.setdefault("uploaded_hashes", []).append(digest)
     history.setdefault("videos", []).append({
