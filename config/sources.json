@@ -7,10 +7,10 @@
       "purpose": "Official NASA announcements and science reporting"
     },
     {
-      "name": "NOAA News",
-      "url": "https://www.noaa.gov/rss.xml",
-      "allowed_hosts": ["noaa.gov", "www.noaa.gov"],
-      "purpose": "Official NOAA science and environment reporting"
+      "name": "NOAA National Ocean Service News",
+      "url": "https://oceanservice.noaa.gov/rss/nosnews.xml",
+      "allowed_hosts": ["oceanservice.noaa.gov"],
+      "purpose": "Official NOAA ocean science and environment reporting"
     }
   ],
   "minimum_independent_sources": 2,
