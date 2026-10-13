@@ -149,6 +149,21 @@ def main():
     if final_info[0].get("status", {}).get("rejectionReason"):
         raise RuntimeError("YouTube reported a rejection reason; video remains private.")
 
+    # Persist the processed private upload before attempting public visibility.
+    # If public promotion fails, the workflow can still save this hash and prevent duplicates.
+    history.setdefault("uploaded_hashes", []).append(digest)
+    history.setdefault("videos", []).append({
+        "video_id": video_id,
+        "url": f"https://www.youtube.com/watch?v={video_id}",
+        "sha256": digest,
+        "title": metadata["title"],
+        "privacy_status": "private",
+        "processing_status": "succeeded",
+        "publish_status": "pending_public_visibility",
+    })
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    UPLOAD_HISTORY_PATH.write_text(json.dumps(history, indent=2, ensure_ascii=False), encoding="utf-8")
+
     # Public visibility is the final step: only after all gates and YouTube processing pass.
     youtube.videos().update(
         part="status",
@@ -161,16 +176,8 @@ def main():
             "Public visibility could not be confirmed. The video may remain private; inspect YouTube Studio."
         )
 
-    history.setdefault("uploaded_hashes", []).append(digest)
-    history.setdefault("videos", []).append({
-        "video_id": video_id,
-        "url": f"https://www.youtube.com/watch?v={video_id}",
-        "sha256": digest,
-        "title": metadata["title"],
-        "privacy_status": "public",
-        "processing_status": "succeeded",
-    })
-    ARTIFACTS.mkdir(parents=True, exist_ok=True)
+    history["videos"][-1]["privacy_status"] = "public"
+    history["videos"][-1]["publish_status"] = "public_verified"
     UPLOAD_HISTORY_PATH.write_text(json.dumps(history, indent=2, ensure_ascii=False), encoding="utf-8")
     print(json.dumps({"status": "published_and_processed", "video_id": video_id,
                       "url": f"https://www.youtube.com/watch?v={video_id}", "sha256": digest}, indent=2))
