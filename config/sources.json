@@ -1,0 +1,20 @@
+{
+  "feeds": [
+    {
+      "name": "NASA News Releases",
+      "url": "https://www.nasa.gov/news-release/feed/",
+      "allowed_hosts": ["nasa.gov", "www.nasa.gov"],
+      "purpose": "Official NASA announcements and science reporting"
+    },
+    {
+      "name": "NOAA News",
+      "url": "https://www.noaa.gov/rss.xml",
+      "allowed_hosts": ["noaa.gov", "www.noaa.gov"],
+      "purpose": "Official NOAA science and environment reporting"
+    }
+  ],
+  "minimum_independent_sources": 2,
+  "require_source_date": true,
+  "allow_third_party_media": false,
+  "allow_paid_generation": false
+}
