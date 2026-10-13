@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 from urllib.parse import urlparse
 
-APPROVED_HOSTS = {"nasa.gov", "www.nasa.gov", "noaa.gov", "www.noaa.gov"}
+APPROVED_HOSTS = {"nasa.gov", "www.nasa.gov", "noaa.gov", "www.noaa.gov", "oceanservice.noaa.gov"}
 REQUIRED_RIGHTS_FIELDS = ("origin", "rights_status", "creator", "license")
 ALLOWED_SEMANTIC_VERIFIERS = {"independent_entailment_model", "human_review"}
 
