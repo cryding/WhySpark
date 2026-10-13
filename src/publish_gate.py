@@ -146,6 +146,12 @@ def validate_render(render: dict) -> list[str]:
         errors.append("Rendered file has no verified video stream.")
     if not render.get("has_audio_stream"):
         errors.append("Rendered file has no verified audio stream.")
+    if render.get("video_codec") != "h264":
+        errors.append("Rendered video codec must be H.264.")
+    if render.get("audio_codec") != "aac":
+        errors.append("Rendered audio codec must be AAC.")
+    if "mp4" not in str(render.get("container", "")).lower():
+        errors.append("Rendered container must be verified as MP4.")
     if render.get("width") != 1080 or render.get("height") != 1920:
         errors.append("Rendered Short must be exactly 1080x1920.")
     duration = render.get("duration_seconds")
