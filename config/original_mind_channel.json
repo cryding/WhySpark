@@ -1,0 +1,42 @@
+{
+  "channel_name": "Recode Mind",
+  "channel_status": "new_channel_setup_required",
+  "format": {
+    "platform": "YouTube Shorts",
+    "aspect_ratio": "9:16",
+    "target_duration_seconds": [30, 60],
+    "language": "English",
+    "visual_direction": "cinematic, high-contrast, original motion graphics, restrained typography",
+    "story_structure": [
+      "0-2s: curiosity hook",
+      "2-12s: relatable question or misconception",
+      "12-42s: evidence-led explanation",
+      "42-55s: practical takeaway",
+      "55-60s: concise closing question"
+    ]
+  },
+  "editorial_rules": {
+    "inspiration_only": true,
+    "copy_other_account_scripts": false,
+    "download_or_reuse_other_account_media": false,
+    "imitate_branding_or_watermarks": false,
+    "medical_or_psychological_diagnosis": false,
+    "unsupported_neuroscience_claims": false,
+    "required_source_domains": [
+      "apa.org",
+      "nih.gov",
+      "pubmed.ncbi.nlm.nih.gov",
+      "pmc.ncbi.nlm.nih.gov",
+      "nhs.uk"
+    ],
+    "require_human_review_before_publication": true,
+    "publish_only_after_all_checks_pass": true
+  },
+  "production_constraints": {
+    "budget_inr": 0,
+    "phone_browser_and_github_website_only": true,
+    "terminal_required": false,
+    "paid_apis_or_credits": false,
+    "automatic_public_upload_enabled": false
+  }
+}
