@@ -47,7 +47,7 @@ def generate_claim(writer, title: str, summary: str) -> str:
     RSS summaries are discovery evidence, not a substitute for the original article.
     A short sentence is selected verbatim where possible; if none is suitable, block.
     """
-    source_text = re.sub(r"\s+", " ", f"{title}. {summary}").strip()
+    source_text = re.sub(r"\s+", " ", summary).strip()
     if len(source_text) < 50:
         raise RuntimeError("Source excerpt is too short for a factual script claim.")
     # Split on sentence boundaries and select a self-contained, source-grounded sentence.
@@ -157,7 +157,7 @@ def main():
             "url": item["url"],
             "title": item["title"],
             "published_at": item["published_at"],
-            "evidence_text": re.sub(r"\s+", " ", (item.get("title", "") + ". " + item.get("summary", ""))).strip(),
+            "evidence_text": re.sub(r"\s+", " ", item.get("summary", "")).strip(),
             "source_name": item["source_name"],
         }
         claim_text = generate_claim(writer, item["title"], item["summary"])
