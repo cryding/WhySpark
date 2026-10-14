@@ -1,0 +1,75 @@
+name: Recode Mind Shorts — Research, Render and Verify
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/original_mind_pipeline.py"
+      - "src/render_short.py"
+      - ".github/workflows/recode-mind-short.yml"
+      - "requirements.txt"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recode-mind-short
+  cancel-in-progress: false
+
+jobs:
+  draft-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install free rendering tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng fonts-dejavu-core
+          ffmpeg -version
+          ffprobe -version
+          espeak-ng --version
+      - name: Install free Python dependencies
+        run: python -m pip install --disable-pip-version-check requests Pillow
+      - name: Research public PubMed bibliographic metadata and draft original script
+        run: python -m src.original_mind_pipeline
+      - name: Render original vertical MP4 and run stream/duration checks
+        run: python -m src.render_short
+      - name: Verify output artifacts exist and are non-empty
+        run: |
+          test -s artifacts/whyspark-short.mp4
+          test -s artifacts/render-report.json
+          test -s artifacts/research-report.md
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path("artifacts/render-report.json").read_text())
+          assert report.get("render_exit_code") == 0
+          assert report.get("has_video_stream") and report.get("has_audio_stream")
+          assert report.get("width") == 1080 and report.get("height") == 1920
+          assert 15 <= float(report.get("duration_seconds",0)) <= 60
+          assert report.get("video_codec") == "h264" and report.get("audio_codec") == "aac"
+          assert Path("artifacts/whyspark-short.mp4").stat().st_size >= 100000
+          print("PASS: MP4 stream, codec, dimensions, duration, and size checks.")
+          print("SHA-256:", report["content_sha256"])
+          PY
+      - name: Save draft MP4 and review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recode-mind-short-draft-${{ github.run_id }}
+          path: |
+            artifacts/whyspark-short.mp4
+            artifacts/render-report.json
+            artifacts/research.json
+            artifacts/research-report.md
+            artifacts/episode.json
+          if-no-files-found: warn
+          retention-days: 7
