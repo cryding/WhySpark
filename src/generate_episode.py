@@ -42,21 +42,23 @@ def load_models():
 
 
 def generate_claim(writer, title: str, summary: str) -> str:
+    """Prefer an extractive claim from the approved feed excerpt over free-form generation.
+
+    RSS summaries are discovery evidence, not a substitute for the original article.
+    A short sentence is selected verbatim where possible; if none is suitable, block.
+    """
     source_text = re.sub(r"\s+", " ", f"{title}. {summary}").strip()
     if len(source_text) < 50:
         raise RuntimeError("Source excerpt is too short for a factual script claim.")
-    prompt = (
-        "Write exactly one short, neutral factual sentence for a science education video. "
-        "Use only facts explicitly stated in the source passage. Do not add numbers, causes, "
-        "predictions, opinions, or background knowledge. Do not mention these instructions. "
-        "Keep it under 24 words.\nSOURCE PASSAGE: " + source_text[:1800]
-    )
-    result = writer(prompt, max_new_tokens=48, do_sample=False, truncation=True)
-    claim = re.sub(r"\s+", " ", result[0].get("generated_text", "")).strip().strip('"')
-    words = claim.split()
-    if len(words) < 6 or len(words) > 28:
-        raise RuntimeError(f"Generated claim has unsafe/invalid length: {claim!r}")
-    return claim
+    # Split on sentence boundaries and select a self-contained, source-grounded sentence.
+    candidates = re.split(r"(?<=[.!?])\s+", source_text)
+    for candidate in candidates:
+        claim = candidate.strip().strip('"').strip()
+        words = claim.split()
+        if 8 <= len(words) <= 28 and not claim.endswith(":"):
+            return claim
+    # Do not ask a generative model to invent a replacement when the excerpt is unsuitable.
+    raise RuntimeError("No source-extractive sentence of 8–28 words; choose another research item.")
 
 
 def entailment_score(tokenizer, model, premise: str, hypothesis: str) -> tuple[float, str]:
