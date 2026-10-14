@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 
 APPROVED_HOSTS = {"nasa.gov", "www.nasa.gov", "noaa.gov", "www.noaa.gov", "oceanservice.noaa.gov", "science.nasa.gov"}
 REQUIRED_RIGHTS_FIELDS = ("origin", "rights_status", "creator", "license")
-ALLOWED_SEMANTIC_VERIFIERS = {"independent_entailment_model", "human_review"}
+ALLOWED_SEMANTIC_VERIFIERS = {"independent_entailment_model", "human_review", "source_excerpt_exact_match"}
 
 
 def _tokens(text: str) -> set[str]:
