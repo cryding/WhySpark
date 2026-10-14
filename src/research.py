@@ -94,7 +94,7 @@ def parse_feed(xml_text: str, source_name: str, allowed_hosts: list[str]) -> lis
             "url": link,
             "host": host,
             "published_at": normalize_date(published),
-            "summary": summary[:500],
+            "summary": summary[:2000],
             "evidence_status": "unverified_discovery_candidate",
         })
     return items
