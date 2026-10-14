@@ -86,6 +86,20 @@ def verify_claim(tokenizer, model, claim: str, source: dict) -> dict:
     premise = str(source.get("evidence_text", "")).strip()
     if not premise:
         return {"status": "fail", "reason": "No source evidence text"}
+    # The current script generator selects a sentence verbatim from this excerpt.
+    # Exact-match checking is deterministic and avoids treating an NLI score as truth.
+    normalize = lambda value: re.sub(r"\\s+", " ", value).strip().casefold()
+    if normalize(claim) and normalize(claim) in normalize(premise):
+        return {
+            "status": "pass",
+            "method": "source_excerpt_exact_match",
+            "model": "deterministic_normalized_substring",
+            "confidence": 1.0,
+            "label": "exact_source_text",
+            "checked_source_ids": [source["id"]],
+            "threshold": 1.0,
+            "limitation": "Confirms only that the sentence appears in the RSS excerpt; does not independently establish truth.",
+        }
     confidence, label = entailment_score(tokenizer, model, premise, claim)
     passed = "entail" in label and confidence >= MIN_ENTAILMENT_CONFIDENCE
     return {
