@@ -81,6 +81,8 @@ def build_html(segments: list[dict], durations: list[float]) -> str:
             f'tl.from("#progress-{index}", {{ scaleX: 0, transformOrigin: "left center", duration: {max(0.3, duration - 0.4):.3}, ease: "none" }}, {start:.3});'
             f'tl.from("#{scene_id} .core", {{ opacity: 0, scale: 0.65, duration: 0.8 }}, {start:.3});'
         )
+    # Keep the composition alive through the final audio sample.
+    timeline_items.append(f'tl.to({{}}, {{duration: {total:.3f}}}, 0);')
     audio_markup = []
     for index, (start, duration) in enumerate(zip(start_times, durations)):
         audio_markup.append(
