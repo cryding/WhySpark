@@ -1,23 +1,20 @@
-# Recode Mind — original YouTube Shorts workflow
+# Recode Mind — phone-only Shorts production
 
-This is a new-channel editorial profile inspired only by broad short-form storytelling patterns. It is not a clone of another creator's scripts, visuals, music, branding, or watermark. The linked Instagram account's posts have not been independently inspected by this repository workflow, so no account-specific style claims are made.
+## What runs automatically
+The GitHub Actions workflow `Recode Mind Shorts — Research, Render and Verify` queries PubMed's public E-utilities for bibliographic metadata, writes a cautious research-literacy draft, renders original vector scenes and local espeak-ng narration, checks MP4 dimensions/codecs/duration/size, and stores a review artifact for seven days.
 
-## Phone/browser-only workflow (₹0)
+## Run it on Android
+1. Open https://github.com/cryding/WhySpark/actions
+2. Select **Recode Mind Shorts — Research, Render and Verify**.
+3. Tap **Run workflow** and wait for the run to finish.
+4. Open the completed run and download the artifact named `recode-mind-short-draft-...`.
+5. Review the MP4 and research report before any upload.
 
-1. Create the new YouTube channel in the YouTube app or browser. Use the channel name **Recode Mind** only if it is available and you want it; this repository cannot create a channel on your behalf.
-2. Use the profile in `config/original_mind_channel.json` as the editorial contract.
-3. Choose one narrow topic (attention, habits, memory, decision-making, or sleep). Do not diagnose viewers or make sensational claims about dopamine, trauma, or the brain.
-4. Research the original source pages on APA, NIH/PubMed/PMC, or NHS. Record each claim, exact supporting passage, source URL, publication date, and limitations. RSS titles or search snippets alone are not evidence.
-5. Write a fresh 75–130 word English script. Use a 0–2 second hook, one clear question, evidence-led explanation, a practical takeaway, and a short ending. Do not paraphrase a specific Reel line-by-line.
-6. Create original graphics and narration. Do not download Recode Mind's inspiration account's video/audio, use its watermark, or reuse music without a license.
-7. Export a 1080×1920 MP4 at 30 fps, H.264 video and AAC audio. Confirm duration is 30–60 seconds, both streams exist, audio is audible, captions are readable on a phone, and no third-party media appears without documented rights.
-8. Review the factual claims and source notes manually. A source citation is not a copyright license; free-to-view does not mean free-to-reuse.
-9. Upload as **Private** first in YouTube Studio. Inspect the video, metadata, and any copyright checks before deciding whether to publish publicly.
+## Non-negotiable publication hold
+This pipeline does not publish to YouTube. It does not download or copy Instagram videos, scripts, music, or branding. The initial video is a research-literacy draft based on PubMed bibliographic metadata, not a summary of scientific findings. A human must open the full paper, review the wording, approve all claims, and inspect rights and audio before any public release. Passing FFmpeg checks proves file structure, not factual accuracy or copyright clearance.
 
-## Fail-closed rule
+## Zero-cost limits
+GitHub-hosted runner availability and free usage quotas can change. No paid API, model credits, or paid billing are configured. If GitHub blocks the run because of account limits, the workflow stops rather than enabling billing.
 
-Do not publish if any source is missing, a factual claim is unsupported, rights are uncertain, rendering/metadata checks fail, or the final MP4 has not been inspected. Automatic public upload is intentionally disabled by default.
-
-## Current implementation boundary
-
-The added GitHub Actions job validates this channel profile and its policy tests only. It does **not** yet generate a Recode Mind MP4, verify a live Instagram account, create a YouTube channel, or upload/publish a video. The existing WhySpark NASA/NOAA pipeline is a separate science/technology workflow and must not be mistaken for this psychology-channel pipeline.
+## What is and is not verified
+The source files are committed to GitHub, but a successful GitHub Actions run and a real MP4 artifact must be confirmed in the Actions UI. This repository edit alone is not evidence that the job ran successfully.
