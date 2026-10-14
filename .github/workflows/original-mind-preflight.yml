@@ -1,0 +1,39 @@
+name: Original Mind Shorts — Profile Preflight
+
+on:
+  push:
+    paths:
+      - "config/original_mind_channel.json"
+      - "src/validate_channel_profile.py"
+      - "tests/test_channel_profile.py"
+      - ".github/workflows/original-mind-preflight.yml"
+  pull_request:
+    paths:
+      - "config/original_mind_channel.json"
+      - "src/validate_channel_profile.py"
+      - "tests/test_channel_profile.py"
+      - ".github/workflows/original-mind-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: original-mind-profile-preflight
+  cancel-in-progress: false
+
+jobs:
+  profile-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate channel profile
+        run: python -m src.validate_channel_profile
+      - name: Run profile policy tests
+        run: python -m unittest tests.test_channel_profile -v
